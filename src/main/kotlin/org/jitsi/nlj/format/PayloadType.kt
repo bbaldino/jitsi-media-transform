@@ -23,7 +23,7 @@ import java.util.concurrent.ConcurrentHashMap
  *
  * @author Boris Grozev
  */
-data class PayloadType(
+abstract class PayloadType(
     /**
      *  The 7-bit RTP payload type number.
      */
@@ -45,14 +45,6 @@ data class PayloadType(
      */
     val parameters: Map<String, String> = ConcurrentHashMap()) {
 
-    val isAudio: Boolean = mediaType == MediaType.AUDIO
-    val isVideo: Boolean = mediaType == MediaType.VIDEO
-    val isVp8: Boolean = encoding.equals(VP8, true)
-    val isVp9: Boolean = encoding.equals(VP9, true)
-    val isH264: Boolean = encoding.equals(H264, true)
-    val isRtx: Boolean = encoding.equals(RTX, true)
-    val isOpus: Boolean = encoding.equals(OPUS, true)
-
     companion object {
         const val VP8 = "vp8"
         const val VP9 = "vp9"
@@ -64,31 +56,23 @@ data class PayloadType(
          * The name of the Associated Payload Type parameter used in RTX.
          */
         const val RTX_APT = "apt"
-
-        /**
-         * Creates a [PayloadType] with media type video.
-         */
-        fun video(
-            pt: Byte,
-            encoding: String,
-            clockRate: Int = 90000,
-            parameters: Map<String, String> = ConcurrentHashMap()
-        ) : PayloadType{
-            return PayloadType(pt, encoding, MediaType.VIDEO, clockRate, parameters)
-        }
-
-        /**
-         * Creates a [PayloadType] for VP8 with a specific PT number.
-         */
-        fun vp8(pt: Byte, parameters: Map<String, String> = ConcurrentHashMap()): PayloadType {
-            return video(pt, VP8, parameters = parameters)
-        }
-
-        /**
-         * Creates a dummy [PayloadType] with media type audio.
-         */
-        fun dummyAudio(pt: Byte) : PayloadType {
-            return PayloadType(pt, "dummy-audio", MediaType.AUDIO, 48000)
-        }
     }
 }
+
+open class VideoPayloadType(
+    pt: Byte,
+    encoding: String,
+    clockRate: Int = 90000,
+    parameters: Map<String, String> = ConcurrentHashMap()
+) : PayloadType(pt, encoding, MediaType.VIDEO, clockRate, parameters)
+
+class Vp8PayloadType(
+    pt: Byte,
+    parameters: Map<String, String> = ConcurrentHashMap()
+) : VideoPayloadType(pt, PayloadType.VP8, parameters = parameters)
+
+class RtxPayloadType(
+    pt: Byte
+) : VideoPayloadType(pt, PayloadType.RTX)
+
+class DummyAudioPayloadType(pt: Byte) : PayloadType(pt, "dummy-audio", MediaType.AUDIO, 48000)
