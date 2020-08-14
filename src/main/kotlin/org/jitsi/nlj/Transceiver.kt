@@ -74,6 +74,7 @@ class Transceiver(
      * transition to another thread if necessary.
      */
     private val eventHandler: TransceiverEventHandler,
+    private val someNewParam: Int,
     private val clock: Clock = Clock.systemUTC()
 ) : Stoppable, NodeStatsProducer {
     private val logger = createChildLogger(parentLogger)
